@@ -1,16 +1,18 @@
-import streamlit as st
-from datetime import datetime
+import json
 import gspread
 from google.oauth2.service_account import Credentials
+import streamlit as st
 
-# =============================
-# 設定
-# =============================
-SPREADSHEET_NAME = "personality_test"  # ←スプレッドシート名
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
+
+# Secrets から認証情報取得
+raw = st.secrets["gcp"]["gcp_service_account"]
+creds = Credentials.from_service_account_info(json.loads(raw), scopes=SCOPES)
+client = gspread.authorize(creds)
+
 
 # =============================
 # 質問ツリー
