@@ -6,9 +6,10 @@ import streamlit as st
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
 
 raw = st.secrets["gcp"]["gcp_service_account"]
-info = json.loads(raw)  # ← ここで JSONDecodeError が出ないようにする
+info = json.loads(raw)
 creds = Credentials.from_service_account_info(info, scopes=SCOPES)
 client = gspread.authorize(creds)
+
 
 
 
@@ -43,9 +44,11 @@ question_tree = {
 # =============================
 def get_gspread_client():
     # Streamlit Cloud の Secrets から取得
-    raw = st.secrets["gcp_service_account"]
-    creds = Credentials.from_service_account_info(json.loads(raw), scopes=SCOPES)
+    raw = st.secrets["gcp"]["gcp_service_account"]  # ← 修正
+    info = json.loads(raw)
+    creds = Credentials.from_service_account_info(info, scopes=SCOPES)
     return gspread.authorize(creds)
+
 
 def send_to_sheet(nickname, password, result_text):
     client = get_gspread_client()
