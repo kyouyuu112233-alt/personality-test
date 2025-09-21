@@ -3,6 +3,8 @@ import gspread
 from google.oauth2.service_account import Credentials
 import streamlit as st
 
+SPREADSHEET_NAME = "personality_test"  # ← 自分のスプレッドシート名に置き換えて
+
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
 
 raw = st.secrets["gcp"]["gcp_service_account"]
