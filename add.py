@@ -3,15 +3,13 @@ import gspread
 from google.oauth2.service_account import Credentials
 import streamlit as st
 
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive",
-]
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
 
-# Secrets から認証情報取得
 raw = st.secrets["gcp"]["gcp_service_account"]
-creds = Credentials.from_service_account_info(json.loads(raw), scopes=SCOPES)
+info = json.loads(raw)  # ← ここで JSONDecodeError が出ないようにする
+creds = Credentials.from_service_account_info(info, scopes=SCOPES)
 client = gspread.authorize(creds)
+
 
 
 # =============================
