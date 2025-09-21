@@ -2,6 +2,7 @@ import json
 import gspread
 from google.oauth2.service_account import Credentials
 import streamlit as st
+from datetime import datetime
 
 SPREADSHEET_NAME = "personality_test"  # ← 自分のスプレッドシート名に置き換えて
 
