@@ -1,7 +1,20 @@
 import streamlit as st
-import os
+from datetime import datetime
+import gspread
+from google.oauth2.service_account import Credentials
 
-# 質問と選択肢の設定
+# =============================
+# 設定
+# =============================
+SPREADSHEET_NAME = "personality_test"  # ←スプレッドシート名
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
+
+# =============================
+# 質問ツリー
+# =============================
 question_tree = {
     "start": {"text": "あなたはよく外出をするほうですか？", "yes": "q1", "no": "q2"},
     "q1": {"text": "コミュ力があると思う？", "yes": "q3", "no": "q4"},
@@ -13,53 +26,93 @@ question_tree = {
     "q7": {"text": "失敗してしまったら落ち込むよりもイライラする", "yes": "c", "no": "d"},
     "q8": {"text": "一人よりも大人数のほうがいい", "yes": "e", "no": "f"},
     "q9": {"text": "感情的になりやすいと思う？", "yes": "g", "no": "h"},
-    "a": "🌟 あなたは **ポジティブタイプ** です！/自分の人生に起きるどんな出来事でもプラスに解釈し、困難な状況に遭遇しても積極的に前進できる人",
-    "b": "🌸 あなたは **優しいタイプ** です！/相手の立場を思いやり、共感する能力が高く、聞き上手で、否定的な言葉を避ける、そして自然体で穏やかな雰囲気を持っている人",
-    "c": "🌧 あなたは **ネガティブタイプ** です！/常に最低の事態を想定しており、いざ何か起こったときにも、立ち直りや対策を練ることができる人",
-    "d": "🔥 あなたは **怒りっぽいタイプ** です！/感情表現がストレートで人間関係を築きやすい、大切なものを守ろうとする強い意志や真剣さを持つ、不満を前向きなエネルギーに変えて行動できる人",
-    "e": "❄️ あなたは**クールタイプ** です！/感情を表に出さず冷静、周りに流されずに自分のポリシーを持っている、ミステリアスな雰囲気の人",
-      "f": "🌙 あなたは **おとなしいタイプ** です！/穏やかで物静か、一人の時間を大切にする、周りの状況を冷静に観察する視点を持つ人",
-    "g": "🎭 あなたは **感情豊かなタイプ** です！/共感力が高く、繊細で、感情表現が豊か、芸術に感動したり、日常生活に喜びを見出したりと、様々なものに深く心を動かされる人",
-    "h": "💪 あなたは **熱血タイプ** です！/エネルギッシュで情熱的、周りを鼓舞して人を巻き込む力がある人",
-    "i": "🌼 あなたは **天然タイプ** です！/素直で裏表のない感情表現、独特な発想や感性、おっちょこちょいな一面、そして他人の評価を気にしないマイペースな人",
-    "j": "🌀 あなたは **変人タイプ** です！/強いこだわりを持つ、特定の話題に没頭する、周囲と比べて独特な価値観や行動、考え方を持つ少し変わった人。もしかしたら✮**天才**✮かも"
+    "a": "🌟 あなたは **ポジティブタイプ** です！",
+    "b": "🌸 あなたは **優しいタイプ** です！",
+    "c": "🌧 あなたは **ネガティブタイプ** です！",
+    "d": "🔥 あなたは **怒りっぽいタイプ** です！",
+    "e": "❄️ あなたは **クールタイプ** です！",
+    "f": "🌙 あなたは **おとなしいタイプ** です！",
+    "g": "🎭 あなたは **感情豊かなタイプ** です！",
+    "h": "💪 あなたは **熱血タイプ** です！",
+    "i": "🌼 あなたは **天然タイプ** です！",
+    "j": "🌀 あなたは **変人タイプ** です！",
 }
 
-def show_image_for_question(key):
-    image_path = f"images/{key}.jpg"
-    if os.path.exists(image_path):
-        st.image(image_path, use_container_width=True)
+# =============================
+# Google Sheets 接続
+# =============================
+def get_gspread_client():
+    # Streamlit Cloud の Secrets から取得
+    raw = st.secrets["gcp_service_account"]
+    creds = Credentials.from_service_account_info(json.loads(raw), scopes=SCOPES)
+    return gspread.authorize(creds)
 
-# セッション状態を使って進行管理
-if 'current_key' not in st.session_state:
-    st.session_state.current_key = "start"
+def send_to_sheet(nickname, password, result_text):
+    client = get_gspread_client()
+    sheet = client.open(SPREADSHEET_NAME).sheet1
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sheet.append_row([timestamp, nickname, password, result_text], value_input_option="USER_ENTERED")
 
-current_key = st.session_state.current_key
+# =============================
+# UI 初期化
+# =============================
+st.set_page_config(page_title="性格診断テスト", page_icon="🧠")
+st.title("🧠 性格診断テスト")
 
-st.markdown("<h1 style='text-align: center;'>🧠 性格診断テスト</h1>", unsafe_allow_html=True)
-st.markdown("---")
+if "nickname" not in st.session_state:
+    st.session_state.update({
+        "nickname": None,
+        "password": None,
+        "current": "start",
+        "sent": False
+    })
 
-if current_key in question_tree and isinstance(question_tree[current_key], dict):
-    question = question_tree[current_key]['text']
-
-    # 画像表示（ファイルがある場合のみ）
-    show_image_for_question(current_key)
-    with st.container():
-        st.markdown(f"<div style='padding: 20px; border-radius: 10px; background-color: #f0f2f6;'><h3 style='text-align: center;'>{question}</h3></div>", unsafe_allow_html=True)
-        
-    st.markdown(" ")
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        if st.button("はい", use_container_width=True):
-            next_key = question_tree[current_key]["yes"]
-            st.session_state.current_key = next_key
-            st.rerun()
-        if st.button("いいえ", use_container_width=True):
-            next_key = question_tree[current_key]["no"]
-            st.session_state.current_key = next_key
-            st.rerun()
-else:
-    st.success(question_tree[current_key])
-    if st.button("もう一度やる"):
-        st.session_state.current_key = "start"
+# =============================
+# 入力フォーム
+# =============================
+if not st.session_state.nickname or not st.session_state.password:
+    st.warning("※ニックネームは後で確認できるようにメモしておいてください。")
+    nick = st.text_input("ニックネーム")
+    pw = st.text_input("パスワード", type="password")
+    if st.button("診断スタート") and nick and pw:
+        st.session_state.nickname = nick
+        st.session_state.password = pw
         st.rerun()
+else:
+    key = st.session_state.current
+    node = question_tree[key]
+
+    if isinstance(node, dict):
+        st.subheader(node["text"])
+        col1, col2 = st.columns(2)
+        if col1.button("はい"):
+            st.session_state.current = node["yes"]
+            st.rerun()
+        if col2.button("いいえ"):
+            st.session_state.current = node["no"]
+            st.rerun()
+    else:
+        # 診断結果表示
+        st.success(f"{st.session_state.nickname} さんの結果：\n\n{node}")
+
+        if not st.session_state.sent:
+            if st.button("📤 スプレッドシートに送信"):
+                try:
+                    send_to_sheet(
+                        st.session_state.nickname,
+                        st.session_state.password,
+                        node
+                    )
+                    st.success("送信しました ✅")
+                    st.session_state.sent = True
+                except Exception as e:
+                    st.error(f"送信に失敗しました: {e}")
+
+        if st.button("もう一度やる"):
+            st.session_state.update({
+                "nickname": None,
+                "password": None,
+                "current": "start",
+                "sent": False
+            })
+            st.rerun()
