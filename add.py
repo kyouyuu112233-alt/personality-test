@@ -99,7 +99,10 @@ else:
             st.rerun()
     else:
         # 診断結果表示
-        st.success(f"{st.session_state.nickname} さんの結果：\n\n{node}")
+        st.success(
+            f"{st.session_state.nickname} さんの結果：\n\n{node}\n\n"
+            "🎮 D棟3階のパソコン室Cで僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
+    )
 
         if not st.session_state.sent:
             if st.button("📤 スプレッドシートに送信"):
