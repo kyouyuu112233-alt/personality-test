@@ -116,22 +116,14 @@ else:
             st.session_state.current = node["no"]
             st.rerun()
     else:
-    # 結果の表示
+        # 結果の表示
         st.success(
-        f"{st.session_state.nickname} さんの結果：\n\n{node}\n\n"
-        "🎮 D棟3階のパソコン室Cで僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
-    )
-    
-    # 結果に対応する説明を表示
-    description = result_descriptions.get(key)
-    if description:
-        st.info(description)  # 🔹青い枠で説明を表示
-    
-    # 結果画像を表示
-    show_image_for_question(key)
+            f"{st.session_state.nickname} さんの結果：\n\n{node}\n\n"
+            "🎮 診断結果を用いてD棟3階で僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
+        )
+        show_image_for_question(key)
 
-
-if not st.session_state.sent:
+        if not st.session_state.sent:
             if st.button("📤 完了"):
                 try:
                     send_to_sheet(
@@ -144,7 +136,7 @@ if not st.session_state.sent:
                 except Exception as e:
                     st.error(f"送信に失敗しました: {e}")
 
-if st.button("もう一度やる"):
+        if st.button("もう一度やる"):
             st.session_state.update({
                 "nickname": None,
                 "password": None,
