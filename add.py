@@ -61,6 +61,23 @@ question_tree = {
 }
 
 # =============================
+# 結果の説明
+# =============================
+result_descriptions = {
+    "a": "前向きでエネルギッシュ。仲間を元気づけ、いつも明るい雰囲気を作るムードメーカー！",
+    "b": "優しくて思いやりがあり、周囲から信頼されるタイプ。誰かが困っているとすぐに助けたくなる。",
+    "c": "慎重で物事を深く考えるタイプ。少しネガティブに見えるけど、実はとても繊細で真面目！",
+    "d": "情熱的で負けず嫌い。怒ることもあるけれど、それは本気で向き合っている証拠！",
+    "e": "冷静沈着で頭の回転が速い。どんなときも落ち着いていて、周りから頼られるタイプ。",
+    "f": "おとなしくてマイペース。自分の世界を大切にしていて、無理に合わせない芯の強さがある。",
+    "g": "感情豊かで表現力が高い。人の気持ちを察するのが得意で、周りを和ませる存在。",
+    "h": "熱血で努力家！どんなことにも一生懸命取り組み、仲間を引っ張っていくリーダー気質。",
+    "i": "マイペースで天真爛漫。周囲を癒す不思議な魅力があり、みんなを笑顔にする。",
+    "j": "独創的で発想力抜群！少し変わってるけど、そのユニークさがあなたの最大の武器！"
+}
+
+
+# =============================
 # UI
 # =============================
 st.set_page_config(page_title="性格診断テスト", page_icon="🧠")
@@ -99,14 +116,22 @@ else:
             st.session_state.current = node["no"]
             st.rerun()
     else:
-        # 結果の表示
+    # 結果の表示
         st.success(
-            f"{st.session_state.nickname} さんの結果：\n\n{node}\n\n"
-            "🎮 診断結果を用いてD棟3階で僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
-        )
-        show_image_for_question(key)
+        f"{st.session_state.nickname} さんの結果：\n\n{node}\n\n"
+        "🎮 D棟3階のパソコン室Cで僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
+    )
+    
+    # 結果に対応する説明を表示
+    description = result_descriptions.get(key)
+    if description:
+        st.info(description)  # 🔹青い枠で説明を表示
+    
+    # 結果画像を表示
+    show_image_for_question(key)
 
-        if not st.session_state.sent:
+
+    if not st.session_state.sent:
             if st.button("📤 完了"):
                 try:
                     send_to_sheet(
@@ -119,7 +144,7 @@ else:
                 except Exception as e:
                     st.error(f"送信に失敗しました: {e}")
 
-        if st.button("もう一度やる"):
+    if st.button("もう一度やる"):
             st.session_state.update({
                 "nickname": None,
                 "password": None,
