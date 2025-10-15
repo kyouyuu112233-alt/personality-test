@@ -3,18 +3,38 @@ import gspread
 from google.oauth2.service_account import Credentials
 import streamlit as st
 from datetime import datetime
+import os  # ← 画像ファイルの存在チェックに使う
 
-SPREADSHEET_NAME = "personality_test"  # ← 自分のスプレッドシート名に置き換えて
+SPREADSHEET_NAME = "personality_test"  # スプレッドシート名に合わせる
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
+# =============================
+# Google認証設定
+# =============================
+def get_gspread_client():
+    raw = st.secrets["gcp"]["gcp_service_account"]
+    info = json.loads(raw)
+    creds = Credentials.from_service_account_info(info, scopes=SCOPES)
+    return gspread.authorize(creds)
 
-raw = st.secrets["gcp"]["gcp_service_account"]
-info = json.loads(raw)
-creds = Credentials.from_service_account_info(info, scopes=SCOPES)
-client = gspread.authorize(creds)
 
+def send_to_sheet(nickname, password, result_text):
+    client = get_gspread_client()
+    sheet = client.open(SPREADSHEET_NAME).sheet1
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    sheet.append_row([timestamp, nickname, password, result_text], value_input_option="USER_ENTERED")
 
-
+# =============================
+# 画像を表示する関数
+# =============================
+def show_image_for_question(key):
+    """質問キーに対応する画像を表示する（images/フォルダ内）"""
+    image_path = f"images/{key}.jpg"  # 例: images/q1.jpg
+    if os.path.exists(image_path):
+        st.image(image_path, use_container_width=True)
+    else:
+        # 画像がない場合はエラーメッセージを出さないようにスルー
+        pass
 
 # =============================
 # 質問ツリー
@@ -41,23 +61,6 @@ question_tree = {
     "i": "🌼 あなたは **天然タイプ** です！",
     "j": "🌀 あなたは **変人タイプ** です！",
 }
-
-# =============================
-# Google Sheets 接続
-# =============================
-def get_gspread_client():
-    # Streamlit Cloud の Secrets から取得
-    raw = st.secrets["gcp"]["gcp_service_account"]  # ← 修正
-    info = json.loads(raw)
-    creds = Credentials.from_service_account_info(info, scopes=SCOPES)
-    return gspread.authorize(creds)
-
-
-def send_to_sheet(nickname, password, result_text):
-    client = get_gspread_client()
-    sheet = client.open(SPREADSHEET_NAME).sheet1
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    sheet.append_row([timestamp, nickname, password, result_text], value_input_option="USER_ENTERED")
 
 # =============================
 # UI 初期化
@@ -88,6 +91,9 @@ else:
     key = st.session_state.current
     node = question_tree[key]
 
+    # 👇 ここで画像を表示
+    show_image_for_question(key)
+
     if isinstance(node, dict):
         st.subheader(node["text"])
         col1, col2 = st.columns(2)
@@ -98,11 +104,13 @@ else:
             st.session_state.current = node["no"]
             st.rerun()
     else:
-        # 診断結果表示
         st.success(
             f"{st.session_state.nickname} さんの結果：\n\n{node}\n\n"
             "🎮 D棟3階のパソコン室Cで僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
-    )
+        )
+
+        # 👇 結果画像も表示（images/a.jpg など）
+        show_image_for_question(key)
 
         if not st.session_state.sent:
             if st.button("📤 完了"):
