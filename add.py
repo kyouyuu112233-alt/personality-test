@@ -94,42 +94,25 @@ else:
     # 👇 ここで画像を表示
     show_image_for_question(key)
 
-    if isinstance(node, dict):
-        st.subheader(node["text"])
-        col1, col2 = st.columns(2)
-        if col1.button("はい"):
-            st.session_state.current = node["yes"]
-            st.rerun()
-        if col2.button("いいえ"):
-            st.session_state.current = node["no"]
-            st.rerun()
-    else:
-        st.success(
-            f"{st.session_state.nickname} さんの結果：\n\n{node}\n\n"
-            "🎮 D棟3階のパソコン室Cで僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
-        )
+if isinstance(node, dict):
+    # 質問の表示
+    st.subheader(node["text"])
 
-        # 👇 結果画像も表示（images/a.jpg など）
-        show_image_for_question(key)
+    # 質問に対応する画像を表示
+    show_image_for_question(key)
 
-        if not st.session_state.sent:
-            if st.button("📤 完了"):
-                try:
-                    send_to_sheet(
-                        st.session_state.nickname,
-                        st.session_state.password,
-                        node
-                    )
-                    st.success("送信しました ✅")
-                    st.session_state.sent = True
-                except Exception as e:
-                    st.error(f"送信に失敗しました: {e}")
-
-        if st.button("もう一度やる"):
-            st.session_state.update({
-                "nickname": None,
-                "password": None,
-                "current": "start",
-                "sent": False
-            })
+    # 回答ボタンを表示
+    for option_key, option_text in node["options"].items():
+        if st.button(option_text, key=key + option_key):
+            st.session_state.path.append(option_key)
             st.rerun()
+
+else:
+    # 結果の表示
+    st.success(
+        f"{st.session_state.nickname} さんの結果：\n\n{node}\n\n"
+        "🎮 D棟3階のパソコン室Cで僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
+    )
+
+    # 結果画像を1枚だけ表示
+    show_image_for_question(key)
