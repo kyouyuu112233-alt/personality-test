@@ -137,8 +137,15 @@ else:
     elif key in results:
         # ✅ 結果表示（ここが追加ポイント！）
         result = results[key]
-        st.success(f"{st.session_state.nickname} さんの結果：\n\n{result['title']}")
-        st.markdown(f"💬 {result['desc']}")
+        st.success(
+    f"""
+    {st.session_state.nickname} さんの結果：  
+    {result['title']}  
+
+    💬 {result['desc']}
+    """
+    )
+
         show_image_for_question(key)
 
         if not st.session_state.sent:
