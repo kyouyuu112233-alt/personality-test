@@ -105,7 +105,7 @@ else:
     )
 
         if not st.session_state.sent:
-            if st.button("📤 スプレッドシートに送信"):
+            if st.button("📤 完了"):
                 try:
                     send_to_sheet(
                         st.session_state.nickname,
