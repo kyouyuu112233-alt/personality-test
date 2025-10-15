@@ -127,7 +127,8 @@ else:
     if description:
         st.info(description)  # 🔹青い枠で説明を表示
     
-
+    # 結果画像を表示
+    show_image_for_question(key)
 
 
     if not st.session_state.sent:
