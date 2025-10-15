@@ -102,7 +102,7 @@ else:
         # 結果の表示
         st.success(
             f"{st.session_state.nickname} さんの結果：\n\n{node}\n\n"
-            "🎮 D棟3階のパソコン室Cで僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
+            "🎮 診断結果を用いてD棟3階で僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
         )
         show_image_for_question(key)
 
