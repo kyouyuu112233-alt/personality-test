@@ -148,6 +148,9 @@ else:
 
         show_image_for_question(key)
 
+        st.info("🎮 D棟三階でこの結果を用いて僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！")
+
+
         if not st.session_state.sent:
             if st.button("📤 完了"):
                 try:
