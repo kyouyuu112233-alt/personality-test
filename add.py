@@ -3,20 +3,19 @@ import gspread
 from google.oauth2.service_account import Credentials
 import streamlit as st
 from datetime import datetime
-import os  # ← 画像ファイルの存在チェックに使う
+import os
 
-SPREADSHEET_NAME = "personality_test"  # スプレッドシート名に合わせる
+SPREADSHEET_NAME = "personality_test"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 # =============================
-# Google認証設定
+# Google認証
 # =============================
 def get_gspread_client():
     raw = st.secrets["gcp"]["gcp_service_account"]
     info = json.loads(raw)
     creds = Credentials.from_service_account_info(info, scopes=SCOPES)
     return gspread.authorize(creds)
-
 
 def send_to_sheet(nickname, password, result_text):
     client = get_gspread_client()
@@ -25,16 +24,15 @@ def send_to_sheet(nickname, password, result_text):
     sheet.append_row([timestamp, nickname, password, result_text], value_input_option="USER_ENTERED")
 
 # =============================
-# 画像を表示する関数
+# 画像表示関数
 # =============================
 def show_image_for_question(key):
-    """質問キーに対応する画像を表示する（images/フォルダ内）"""
-    image_path = f"images/{key}.jpg"  # 例: images/q1.jpg
-    if os.path.exists(image_path):
-        st.image(image_path, use_container_width=True)
-    else:
-        # 画像がない場合はエラーメッセージを出さないようにスルー
-        pass
+    """質問や結果に対応する画像を表示する"""
+    for ext in [".jpg", ".png", ".jpeg", ".gif"]:
+        image_path = f"images/{key}{ext}"
+        if os.path.exists(image_path):
+            st.image(image_path, use_container_width=True)
+            break  # 最初に見つけた1枚だけ表示
 
 # =============================
 # 質問ツリー
@@ -63,7 +61,7 @@ question_tree = {
 }
 
 # =============================
-# UI 初期化
+# UI
 # =============================
 st.set_page_config(page_title="性格診断テスト", page_icon="🧠")
 st.title("🧠 性格診断テスト")
@@ -76,9 +74,6 @@ if "nickname" not in st.session_state:
         "sent": False
     })
 
-# =============================
-# 入力フォーム
-# =============================
 if not st.session_state.nickname or not st.session_state.password:
     st.warning("※ニックネームは後で確認できるようにメモしておいてください。")
     nick = st.text_input("ニックネーム")
@@ -89,30 +84,46 @@ if not st.session_state.nickname or not st.session_state.password:
         st.rerun()
 else:
     key = st.session_state.current
-    node = question_tree[key]
+    node = question_tree.get(key)
 
-    # 👇 ここで画像を表示
-    show_image_for_question(key)
-
-if isinstance(node, dict):
-    # 質問の表示
-    st.subheader(node["text"])
-
-    # 質問に対応する画像を表示
-    show_image_for_question(key)
-
-    # 回答ボタンを表示
-    for option_key, option_text in node["options"].items():
-        if st.button(option_text, key=key + option_key):
-            st.session_state.path.append(option_key)
+    if node is None:
+        st.error("質問データが見つかりません。")
+    elif isinstance(node, dict):
+        show_image_for_question(key)
+        st.subheader(node["text"])
+        col1, col2 = st.columns(2)
+        if col1.button("はい"):
+            st.session_state.current = node["yes"]
             st.rerun()
+        if col2.button("いいえ"):
+            st.session_state.current = node["no"]
+            st.rerun()
+    else:
+        # 結果の表示
+        st.success(
+            f"{st.session_state.nickname} さんの結果：\n\n{node}\n\n"
+            "🎮 D棟3階のパソコン室Cで僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
+        )
+        show_image_for_question(key)
 
-else:
-    # 結果の表示
-    st.success(
-        f"{st.session_state.nickname} さんの結果：\n\n{node}\n\n"
-        "🎮 D棟3階のパソコン室Cで僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！"
-    )
+        if not st.session_state.sent:
+            if st.button("📤 完了"):
+                try:
+                    send_to_sheet(
+                        st.session_state.nickname,
+                        st.session_state.password,
+                        node
+                    )
+                    st.success("送信しました ✅")
+                    st.session_state.sent = True
+                except Exception as e:
+                    st.error(f"送信に失敗しました: {e}")
 
-    # 結果画像を1枚だけ表示
-    show_image_for_question(key)
+        if st.button("もう一度やる"):
+            st.session_state.update({
+                "nickname": None,
+                "password": None,
+                "current": "start",
+                "sent": False
+            })
+            st.rerun()
