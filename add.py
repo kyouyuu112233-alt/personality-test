@@ -131,7 +131,7 @@ else:
     show_image_for_question(key)
 
 
-    if not st.session_state.sent:
+if not st.session_state.sent:
             if st.button("📤 完了"):
                 try:
                     send_to_sheet(
@@ -144,7 +144,7 @@ else:
                 except Exception as e:
                     st.error(f"送信に失敗しました: {e}")
 
-    if st.button("もう一度やる"):
+if st.button("もう一度やる"):
             st.session_state.update({
                 "nickname": None,
                 "password": None,
