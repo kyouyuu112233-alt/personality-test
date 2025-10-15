@@ -117,23 +117,26 @@ if not st.session_state.nickname or not st.session_state.password:
         st.rerun()
 else:
     key = st.session_state.current
-    node = question_tree.get(key)
 
-    if node is None:
-        st.error("質問データが見つかりません。")
-    elif isinstance(node, dict):
-        show_image_for_question(key)
-        st.subheader(node["text"])
-        col1, col2 = st.columns(2)
-        if col1.button("はい"):
-            st.session_state.current = node["yes"]
-            st.rerun()
-        if col2.button("いいえ"):
-            st.session_state.current = node["no"]
-            st.rerun()
-    else:
-        # 結果の表示
-        result = results.get(key, {"title": node, "desc": ""})
+    # --- ここを修正 ---
+    if key in question_tree:
+        node = question_tree[key]
+        if isinstance(node, dict):
+            show_image_for_question(key)
+            st.subheader(node["text"])
+            col1, col2 = st.columns(2)
+            if col1.button("はい"):
+                st.session_state.current = node["yes"]
+                st.rerun()
+            if col2.button("いいえ"):
+                st.session_state.current = node["no"]
+                st.rerun()
+        else:
+            # ここに来ることは通常ない（安全対策）
+            st.error("質問データの形式が正しくありません。")
+    elif key in results:
+        # ✅ 結果表示（ここが追加ポイント！）
+        result = results[key]
         st.success(f"{st.session_state.nickname} さんの結果：\n\n{result['title']}")
         st.markdown(f"💬 {result['desc']}")
         show_image_for_question(key)
@@ -159,3 +162,5 @@ else:
                 "sent": False
             })
             st.rerun()
+    else:
+        st.error("質問または結果データが見つかりません。")
