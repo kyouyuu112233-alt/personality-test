@@ -99,9 +99,7 @@ results = {
 st.set_page_config(page_title="性格診断テスト", page_icon="🧠")
 st.title("🧠 性格診断テスト")
 
-st.title("🛠️ メンテナンス中")
-st.warning("現在、この診断は準備中です。公開までしばらくお待ちください。")
-st.stop()
+
 
 
 if "nickname" not in st.session_state:
