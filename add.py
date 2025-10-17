@@ -110,13 +110,11 @@ if "nickname" not in st.session_state:
         "sent": False
     })
 
-if not st.session_state.nickname or not st.session_state.password:
-    st.warning("※ニックネームは後で確認できるようにメモしておいてください。")
+if not st.session_state.nickname:
+    st.warning("ニックネームを入力してください。")
     nick = st.text_input("ニックネーム")
-    pw = st.text_input("パスワード", type="password")
     if st.button("診断スタート") and nick and pw:
         st.session_state.nickname = nick
-        st.session_state.password = pw
         st.rerun()
 else:
     key = st.session_state.current
@@ -151,7 +149,7 @@ else:
 
         show_image_for_question(key)
 
-        st.info("🎮 D棟三階でこの結果を用いて僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！")
+        st.info("🎮 D棟3階のパソコン室B（伊藤塾）で僕たちが作った3Dシューティングゲームが遊べます。ぜひプレイしてみてね！")
 
 
         if not st.session_state.sent:
@@ -162,10 +160,10 @@ else:
                         st.session_state.password,
                         result["title"]
                     )
-                    st.success("送信しました ✅")
+                    st.success("診断が終了しました ✅")
                     st.session_state.sent = True
                 except Exception as e:
-                    st.error(f"送信に失敗しました: {e}")
+                    st.error(f"再度完了ボタンを押してください: {e}")
 
         if st.button("もう一度やる"):
             st.session_state.update({
