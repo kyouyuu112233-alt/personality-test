@@ -68,23 +68,21 @@ results = {
 st.set_page_config(page_title="性格診断テスト", page_icon="🧠")
 st.title("🧠 性格診断テスト")
 
-# --- メンテナンスモードをOFFにしたい場合はこの3行をコメントアウト ---
-# st.title("🛠️ メンテナンス中")
-# st.warning("現在、この診断は準備中です。公開までしばらくお待ちください。")
-# st.stop()
-
 if "nickname" not in st.session_state:
     st.session_state.update({
         "nickname": None,
+        "password": None,
         "current": "start",
         "sent": False
     })
 
-if not st.session_state.nickname:
-    st.warning("ニックネームを入力してください。")
+if not st.session_state.nickname or not st.session_state.password:
+    st.warning("※ニックネームは後で確認できるようにメモしておいてください。")
     nick = st.text_input("ニックネーム")
-    if st.button("診断スタート") and nick:
+    pw = st.text_input("パスワード", type="password")
+    if st.button("診断スタート") and nick and pw:
         st.session_state.nickname = nick
+        st.session_state.password = pw
         st.rerun()
 else:
     key = st.session_state.current
@@ -113,20 +111,21 @@ else:
         )
         show_image_for_question(key)
 
-        st.info("🎮 D棟3階パソコン室B(伊藤塾)僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！")
+        st.info("🎮 D棟三階でこの結果を用いて僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！")
 
         if not st.session_state.sent:
             if st.button("📤 完了"):
                 try:
-                    send_to_sheet(st.session_state.nickname, "", result["title"])
-                    st.success("診断が終了しました ✅")
+                    send_to_sheet(st.session_state.nickname, st.session_state.password, result["title"])
+                    st.success("送信しました ✅")
                     st.session_state.sent = True
                 except Exception as e:
-                    st.error(f"もう一度完了ボタンを押してください: {e}")
+                    st.error(f"送信に失敗しました: {e}")
 
         if st.button("もう一度やる"):
             st.session_state.update({
                 "nickname": None,
+                "password": None,
                 "current": "start",
                 "sent": False
             })
