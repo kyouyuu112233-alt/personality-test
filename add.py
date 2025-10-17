@@ -77,7 +77,7 @@ if "nickname" not in st.session_state:
     })
 
 if not st.session_state.nickname or not st.session_state.password:
-    st.warning("※ニックネームは後で確認できるようにメモしておいてください。")
+    st.warning("※ニックネームは後で確認できるようにメモ等しておくことをおすすめします。")
     nick = st.text_input("ニックネーム")
     pw = st.text_input("パスワード", type="password")
     if st.button("診断スタート") and nick and pw:
