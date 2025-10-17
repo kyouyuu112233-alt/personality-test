@@ -49,48 +49,17 @@ question_tree = {
     "q9": {"text": "感情的になりやすいと思う？", "yes": "g", "no": "h"},
 }
 
-# 結果タイプと説明文
 results = {
-    "a": {
-        "title": "🌟 あなたは **ポジティブタイプ** です！",
-        "desc": "いつも明るく前向きで、周りの人を元気にするムードメーカー！",
-    },
-    "b": {
-        "title": "🌸 あなたは **優しいタイプ** です！",
-        "desc": "思いやりがあり、人の気持ちを大切にする優しさあふれる人です。",
-    },
-    "c": {
-        "title": "🌧 あなたは **ネガティブタイプ** です！",
-        "desc": "少し心配性だけど、その慎重さが大きな失敗を防いでくれます。",
-    },
-    "d": {
-        "title": "🔥 あなたは **怒りっぽいタイプ** です！",
-        "desc": "感情表現が豊かで正義感が強い、熱いハートの持ち主！",
-    },
-    "e": {
-        "title": "❄️ あなたは **クールタイプ** です！",
-        "desc": "冷静で落ち着いた性格。どんな状況でも焦らず判断できます。",
-    },
-    "f": {
-        "title": "🌙 あなたは **おとなしいタイプ** です！",
-        "desc": "マイペースで穏やか。周りを安心させる存在です。",
-    },
-    "g": {
-        "title": "🎭 あなたは **感情豊かなタイプ** です！",
-        "desc": "喜怒哀楽をはっきり表現できる魅力的な人です。",
-    },
-    "h": {
-        "title": "💪 あなたは **熱血タイプ** です！",
-        "desc": "努力家で仲間思い。目標にまっすぐ突き進む力強さを持っています。",
-    },
-    "i": {
-        "title": "🌼 あなたは **天然タイプ** です！",
-        "desc": "自由でマイペース。周りをほっこりさせる癒し系です。",
-    },
-    "j": {
-        "title": "🌀 あなたは **変人タイプ** です！",
-        "desc": "独創的で発想力抜群！誰にも真似できない個性の持ち主です。",
-    },
+    "a": {"title": "🌟 あなたは **ポジティブタイプ** です！", "desc": "いつも明るく前向きで、周りの人を元気にするムードメーカー！"},
+    "b": {"title": "🌸 あなたは **優しいタイプ** です！", "desc": "思いやりがあり、人の気持ちを大切にする優しさあふれる人です。"},
+    "c": {"title": "🌧 あなたは **ネガティブタイプ** です！", "desc": "少し心配性だけど、その慎重さが大きな失敗を防いでくれます。"},
+    "d": {"title": "🔥 あなたは **怒りっぽいタイプ** です！", "desc": "感情表現が豊かで正義感が強い、熱いハートの持ち主！"},
+    "e": {"title": "❄️ あなたは **クールタイプ** です！", "desc": "冷静で落ち着いた性格。どんな状況でも焦らず判断できます。"},
+    "f": {"title": "🌙 あなたは **おとなしいタイプ** です！", "desc": "マイペースで穏やか。周りを安心させる存在です。"},
+    "g": {"title": "🎭 あなたは **感情豊かなタイプ** です！", "desc": "喜怒哀楽をはっきり表現できる魅力的な人です。"},
+    "h": {"title": "💪 あなたは **熱血タイプ** です！", "desc": "努力家で仲間思い。目標にまっすぐ突き進む力強さを持っています。"},
+    "i": {"title": "🌼 あなたは **天然タイプ** です！", "desc": "自由でマイペース。周りをほっこりさせる癒し系です。"},
+    "j": {"title": "🌀 あなたは **変人タイプ** です！", "desc": "独創的で発想力抜群！誰にも真似できない個性の持ち主です。"},
 }
 
 # =============================
@@ -99,76 +68,65 @@ results = {
 st.set_page_config(page_title="性格診断テスト", page_icon="🧠")
 st.title("🧠 性格診断テスト")
 
-
-
+# --- メンテナンスモードをOFFにしたい場合はこの3行をコメントアウト ---
+# st.title("🛠️ メンテナンス中")
+# st.warning("現在、この診断は準備中です。公開までしばらくお待ちください。")
+# st.stop()
 
 if "nickname" not in st.session_state:
     st.session_state.update({
         "nickname": None,
-        "password": None,
         "current": "start",
         "sent": False
     })
 
 if not st.session_state.nickname:
-    st.warning("ニックネームを入力してください。")
+    st.warning("※ニックネームは後で確認できるようにメモしておいてください。")
     nick = st.text_input("ニックネーム")
-    if st.button("診断スタート") and nick and pw:
+    if st.button("診断スタート") and nick:
         st.session_state.nickname = nick
         st.rerun()
 else:
     key = st.session_state.current
 
-    # --- ここを修正 ---
     if key in question_tree:
         node = question_tree[key]
-        if isinstance(node, dict):
-            show_image_for_question(key)
-            st.subheader(node["text"])
-            col1, col2 = st.columns(2)
-            if col1.button("はい"):
-                st.session_state.current = node["yes"]
-                st.rerun()
-            if col2.button("いいえ"):
-                st.session_state.current = node["no"]
-                st.rerun()
-        else:
-            # ここに来ることは通常ない（安全対策）
-            st.error("質問データの形式が正しくありません。")
+        show_image_for_question(key)
+        st.subheader(node["text"])
+        col1, col2 = st.columns(2)
+        if col1.button("はい"):
+            st.session_state.current = node["yes"]
+            st.rerun()
+        if col2.button("いいえ"):
+            st.session_state.current = node["no"]
+            st.rerun()
+
     elif key in results:
-        # ✅ 結果表示（ここが追加ポイント！）
         result = results[key]
         st.success(
-    f"""
-    {st.session_state.nickname} さんの結果：  
-    {result['title']}  
+            f"""
+            {st.session_state.nickname} さんの結果：  
+            {result['title']}  
 
-    💬 {result['desc']}
-    """
-    )
-
+            💬 {result['desc']}
+            """
+        )
         show_image_for_question(key)
 
-        st.info("🎮 D棟3階のパソコン室B（伊藤塾）で僕たちが作った3Dシューティングゲームが遊べます。ぜひプレイしてみてね！")
-
+        st.info("🎮 D棟三階でこの結果を用いて僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！")
 
         if not st.session_state.sent:
             if st.button("📤 完了"):
                 try:
-                    send_to_sheet(
-                        st.session_state.nickname,
-                        st.session_state.password,
-                        result["title"]
-                    )
-                    st.success("診断が終了しました ✅")
+                    send_to_sheet(st.session_state.nickname, "", result["title"])
+                    st.success("送信しました ✅")
                     st.session_state.sent = True
                 except Exception as e:
-                    st.error(f"再度完了ボタンを押してください: {e}")
+                    st.error(f"送信に失敗しました: {e}")
 
         if st.button("もう一度やる"):
             st.session_state.update({
                 "nickname": None,
-                "password": None,
                 "current": "start",
                 "sent": False
             })
