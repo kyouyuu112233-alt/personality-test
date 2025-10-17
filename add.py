@@ -81,7 +81,7 @@ if "nickname" not in st.session_state:
     })
 
 if not st.session_state.nickname:
-    st.warning("※ニックネームは後で確認できるようにメモしておいてください。")
+    st.warning("ニックネームを入力してください。")
     nick = st.text_input("ニックネーム")
     if st.button("診断スタート") and nick:
         st.session_state.nickname = nick
@@ -113,16 +113,16 @@ else:
         )
         show_image_for_question(key)
 
-        st.info("🎮 D棟三階でこの結果を用いて僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！")
+        st.info("🎮 D棟3階パソコン室B(伊藤塾)僕たちが作った3Dゲームが遊べます。ぜひプレイしてみてね！")
 
         if not st.session_state.sent:
             if st.button("📤 完了"):
                 try:
                     send_to_sheet(st.session_state.nickname, "", result["title"])
-                    st.success("送信しました ✅")
+                    st.success("診断が終了しました ✅")
                     st.session_state.sent = True
                 except Exception as e:
-                    st.error(f"送信に失敗しました: {e}")
+                    st.error(f"もう一度完了ボタンを押してください: {e}")
 
         if st.button("もう一度やる"):
             st.session_state.update({
